@@ -76,7 +76,13 @@ router.post("/deposit", requireAuth, async (req, res) => {
       });
     } catch (nestlinkErr) {
       // Return error with proper status code per API docs
-      const msg = nestlinkErr.message || "Failed to initiate M-Pesa payment";
+      let msg = nestlinkErr.message || "Failed to initiate M-Pesa payment";
+      
+      // If the error message is just "relax" or similar cryptic provider errors,
+      // map it to something the user can understand.
+      if (msg.toLowerCase().includes("relax")) {
+        msg = "M-Pesa service is busy. Please wait a few seconds and try again.";
+      }
       
       if (msg.includes("0 credits")) {
         return res.status(402).json({

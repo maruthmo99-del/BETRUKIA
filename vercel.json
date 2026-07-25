@@ -1,7 +1,6 @@
 {
   "version": 2,
   "public": true,
-  "name": "betrukia",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "https://betrukia.onrender.com/api/$1" },
     { "source": "/(.*)", "destination": "/frontend/dist/$1" }
