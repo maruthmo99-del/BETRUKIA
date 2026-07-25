@@ -368,7 +368,7 @@ export function useGameSocket(getToken, userId, demoMode = false, demoBalance = 
       });
       socket.on("disconnect", () => setConnected(false));
       socket.on("connect_error", (err) => {
-        console.warn("[useGameSocket] connect_error", err);
+        // console.warn("[useGameSocket] connect_error", err);
         setConnected(false);
       });
 
@@ -608,7 +608,7 @@ export function useGameSocket(getToken, userId, demoMode = false, demoBalance = 
         setWatchdogStatus("No tick from server in 6s. Reconnecting...");
         if (socketRef.current && Date.now() - lastReconnectAttemptRef.current > 10000) {
           lastReconnectAttemptRef.current = Date.now();
-          console.warn("[useGameSocket] watchdog reconnect attempt due to stale ticks", { ageMs });
+          // console.warn("[useGameSocket] watchdog reconnect attempt due to stale ticks", { ageMs });
           socketRef.current.disconnect();
           socketRef.current.connect();
         }

@@ -37,10 +37,10 @@ export function useAuth() {
         setLoading(false);
         return;
       }
-      console.log("[useAuth] onAuthStateChanged: user present", { uid: user.uid, email: user.email });
+      // console.log("[useAuth] onAuthStateChanged: user present", { uid: user.uid, email: user.email });
       try {
         const token = await user.getIdToken();
-        console.log("[useAuth] got idToken (length)", token?.length);
+        // console.log("[useAuth] got idToken (length)", token?.length);
         setIdToken(token);
         let res;
         try {
@@ -49,16 +49,16 @@ export function useAuth() {
             headers: { Authorization: `Bearer ${token}` },
           });
         } catch (fetchErr) {
-          console.error("[useAuth] session fetch failed -", fetchErr.message, "API_URL:", API_URL);
+          // console.error("[useAuth] session fetch failed -", fetchErr.message, "API_URL:", API_URL);
           throw fetchErr;
         }
-        console.log("[useAuth] session response", res.status);
+        // console.log("[useAuth] session response", res.status);
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Failed to sync session");
         setAppUser(data.user);
         setAuthError(null);
       } catch (err) {
-        console.error("[useAuth] session error:", err);
+        // console.error("[useAuth] session error:", err);
         setAuthError(err.message || "Unable to sign you in right now.");
       } finally {
         setLoading(false);
@@ -112,11 +112,11 @@ export function useAuth() {
             body: JSON.stringify({ code: referralCode }),
           });
         } catch (e) {
-          console.error("Failed to attach referral code:", e);
+          // console.error("Failed to attach referral code:", e);
         }
       }
 
-      console.log("[useAuth] signUp: Firebase auth succeeded, updating profile at", `${API_URL}/api/auth/profile`);
+      // console.log("[useAuth] signUp: Firebase auth succeeded, updating profile at", `${API_URL}/api/auth/profile`);
       let profileRes;
       try {
         profileRes = await fetch(`${API_URL}/api/auth/profile`, {
@@ -125,7 +125,7 @@ export function useAuth() {
           body: JSON.stringify({ displayName: name, phone }),
         });
       } catch (fetchErr) {
-        console.error("[useAuth] signUp: profile fetch failed -", fetchErr.message, "API_URL:", API_URL);
+        // console.error("[useAuth] signUp: profile fetch failed -", fetchErr.message, "API_URL:", API_URL);
         throw new Error(`Cannot reach server at ${API_URL} - ${fetchErr.message}`);
       }
       const profileData = await profileRes.json().catch(() => ({}));
@@ -141,7 +141,7 @@ export function useAuth() {
             headers: { Authorization: `Bearer ${token}` },
           });
         } catch (fetchErr) {
-          console.error("[useAuth] signUp: session fetch failed -", fetchErr.message, "API_URL:", API_URL);
+          // console.error("[useAuth] signUp: session fetch failed -", fetchErr.message, "API_URL:", API_URL);
           throw new Error(`Cannot reach server at ${API_URL} - ${fetchErr.message}`);
         }
         const sessionData = await sessionRes.json().catch(() => ({}));
@@ -161,7 +161,7 @@ export function useAuth() {
       const authIdentifier = normalizeAuthIdentifier(identifier);
       const cred = await signInWithEmailAndPassword(auth, authIdentifier, password);
       const token = await cred.user.getIdToken();
-      console.log("[useAuth] signIn: Firebase auth succeeded, fetching session from", `${API_URL}/api/auth/session`);
+      // console.log("[useAuth] signIn: Firebase auth succeeded, fetching session from", `${API_URL}/api/auth/session`);
       let res;
       try {
         res = await fetch(`${API_URL}/api/auth/session`, {
@@ -169,7 +169,7 @@ export function useAuth() {
           headers: { Authorization: `Bearer ${token}` },
         });
       } catch (fetchErr) {
-        console.error("[useAuth] signIn: fetch failed -", fetchErr.message, "API_URL:", API_URL);
+        // console.error("[useAuth] signIn: fetch failed -", fetchErr.message, "API_URL:", API_URL);
         throw new Error(`Cannot reach server at ${API_URL} - ${fetchErr.message}`);
       }
       const data = await res.json().catch(() => ({}));

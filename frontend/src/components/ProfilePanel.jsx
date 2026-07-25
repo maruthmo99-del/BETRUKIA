@@ -228,14 +228,18 @@ export default function ProfilePanel({ open, onClose, onOpenHelpFAQ, onOpenRespo
                 <div className="promo-sub">Betrukia is giving 50% bonus for every friend's deposit.</div>
               </div>
 
-              <div className="referral-stats-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
-                <div className="stat-item" style={{ background: 'rgba(255,255,255,0.03)', padding: 10, borderRadius: 8 }}>
-                  <div className="stats-label">Balance</div>
-                  <div className="user-balance" style={{ fontSize: 18 }}>KES {(Number(referralStats.currentBalance || 0) / 100).toFixed(2)}</div>
+              <div className="referral-stats-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 12 }}>
+                <div className="stat-item" style={{ background: 'rgba(255,255,255,0.03)', padding: 8, borderRadius: 8 }}>
+                  <div className="stats-label" style={{ fontSize: 10 }}>Balance</div>
+                  <div className="user-balance" style={{ fontSize: 14 }}>KES {(Number(referralStats.currentBalance || 0) / 100).toFixed(2)}</div>
                 </div>
-                <div className="stat-item" style={{ background: 'rgba(255,255,255,0.03)', padding: 10, borderRadius: 8 }}>
-                  <div className="stats-label">Lifetime</div>
-                  <div className="user-balance" style={{ fontSize: 18, color: '#4ade80' }}>KES {(Number(referralStats.lifetimeEarnings || 0) / 100).toFixed(2)}</div>
+                <div className="stat-item" style={{ background: 'rgba(255,255,255,0.03)', padding: 8, borderRadius: 8 }}>
+                  <div className="stats-label" style={{ fontSize: 10 }}>Lifetime</div>
+                  <div className="user-balance" style={{ fontSize: 14, color: '#4ade80' }}>KES {(Number(referralStats.lifetimeEarnings || 0) / 100).toFixed(2)}</div>
+                </div>
+                <div className="stat-item" style={{ background: 'rgba(255,255,255,0.03)', padding: 8, borderRadius: 8 }}>
+                  <div className="stats-label" style={{ fontSize: 10 }}>Referrals</div>
+                  <div className="user-balance" style={{ fontSize: 14, color: '#60a5fa' }}>{referralStats.referralCount || 0}</div>
                 </div>
               </div>
 

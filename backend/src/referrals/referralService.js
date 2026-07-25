@@ -93,6 +93,10 @@ export function getReferralStats(userId) {
     AND user_id = ?
   `).get(userId)?.total || 0;
 
+  const referralCount = db.prepare(`
+    SELECT COUNT(*) as count FROM referrals WHERE inviter_user_id = ?
+  `).get(userId)?.count || 0;
+
   const activities = db.prepare(`
     SELECT e.event_type, e.amount, e.created_at, u.display_name as friend_name
     FROM referral_events e
@@ -105,9 +109,10 @@ export function getReferralStats(userId) {
   return {
     code,
     referralLink: `https://kuomoka.co.ke/?ref=${code}`,
-    currentBalance: Number(user.referral_balance || 0),
+    currentBalance: Number(user?.referral_balance || 0),
     lifetimeEarnings: Number(lifetimeEarnings || 0),
     withdrawnEarnings: Number(withdrawals || 0),
+    referralCount: Number(referralCount || 0),
     pendingEarnings: 0,
     activities: activities.map(a => ({
       ...a,

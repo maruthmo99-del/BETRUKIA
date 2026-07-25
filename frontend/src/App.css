@@ -477,7 +477,9 @@ img, svg, canvas, video {
   display: grid;
   grid-template-columns: 260px minmax(0, 1fr) 340px;
   gap: 14px;
-  align-items: stretch; /* Change to stretch to fill height */
+  align-items: start;
+  height: calc(100vh - 180px);
+  min-height: 600px;
 }
 .play-layout > * {
   /* Grid items default to min-width: auto, which stops them shrinking
@@ -490,6 +492,8 @@ img, svg, canvas, video {
   flex-direction: column;
   gap: 12px;
   min-width: 0;
+  height: 100%;
+  max-height: 100%;
 }
 
 .all-bets-panel,
@@ -503,10 +507,13 @@ img, svg, canvas, video {
 .all-bets-panel {
   border-radius: 22px;
   padding: 16px;
-  height: 600px; /* Fixed height for desktop */
+  height: 100%;
+  max-height: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  background: linear-gradient(180deg, var(--bg-elev) 0%, var(--bg-elev-2) 100%);
+  border: 1px solid var(--border);
 }
 
 .chat-panel {
@@ -658,8 +665,8 @@ img, svg, canvas, video {
   overflow: hidden;
   border-radius: 24px;
   padding: 0;
-  min-height: 380px;
-  height: 100%;
+  flex: 1;
+  min-height: 300px;
   display: flex;
   flex-direction: column;
   justify-content: stretch;
@@ -1485,8 +1492,10 @@ img, svg, canvas, video {
   border-radius: 16px;
   padding: 10px;
   flex-shrink: 0;
-  height: auto; /* Allow content height */
+  height: auto;
   overflow: visible;
+  background: linear-gradient(180deg, var(--bg-elev) 0%, var(--bg-elev-2) 100%);
+  border: 1px solid var(--border);
 }
 .balance-line {
   display: flex;
@@ -2674,8 +2683,14 @@ img, svg, canvas, video {
     height: auto;
   }
   .all-bets-panel {
-    height: calc(100vh - 200px); /* Fill available space on desktop */
+    height: calc(100vh - 220px);
     min-height: 500px;
+    display: flex;
+    flex-direction: column;
+  }
+  .all-bets-list {
+    flex: 1;
+    overflow-y: auto;
   }
   .provably-fair-footer {
     flex: 0 0 auto !important;
@@ -2690,23 +2705,46 @@ img, svg, canvas, video {
    column at 760px; these tighten spacing so it reads cleanly on
    small screens (normal page scroll is expected here).
    ============================================================ */
-@media (max-width: 760px) {
+@media (max-width: 1024px) {
   .play-layout {
     display: flex;
     flex-direction: column;
+    height: auto;
+    min-height: 0;
+    gap: 16px;
   }
   .play-main {
-    order: -1; /* Keep curve and betting panel at the top */
+    order: 1;
+    height: auto;
+    max-height: none;
+    flex: none;
+  }
+  .multiplier-stage {
+    min-height: 320px;
+    flex: none;
+  }
+  .bet-panel {
+    order: 2;
+    flex: none;
   }
   .all-bets-panel {
-    height: 400px; /* Force fixed height on mobile */
-    max-height: 400px;
-    overflow: hidden;
+    order: 3;
+    height: 450px;
+    max-height: 450px;
+    flex: none;
+  }
+  .chat-panel {
+    order: 4;
+    height: 400px;
+    flex: none;
   }
   .all-bets-list {
-    overflow-y: auto;
     flex: 1;
+    overflow-y: auto;
   }
+}
+
+@media (max-width: 760px) {
   .app-shell {
     padding-top: 12px;
   }
@@ -2732,7 +2770,7 @@ img, svg, canvas, video {
     min-height: 240px;
   }
   .multiplier-stage {
-    min-height: 300px;
+    min-height: 280px;
   }
   .bet-slots-grid {
     grid-template-columns: repeat(2, 1fr);

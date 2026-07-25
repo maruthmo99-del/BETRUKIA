@@ -95,7 +95,7 @@ router.post("/deposit", requireAuth, async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("NestLink deposit error:", error);
+    // console.error("NestLink deposit error:", error);
     res.status(500).json({
       status: false,
       msg: "Deposit request failed",
@@ -140,7 +140,7 @@ router.get("/checkPayment", requireAuth, async (req, res) => {
 
         const amountCents = Math.round(paymentStatus.amount * 100);
         const bonusCents = Math.round(amountCents * 0.5); // 50% bonus
-        console.log("=== PAYMENT SUCCESS ===");
+        // console.log("=== PAYMENT SUCCESS ===");
         // Record wallet transaction in database (bonus is applied automatically)
         recordWalletTransaction({
           
@@ -163,7 +163,7 @@ router.get("/checkPayment", requireAuth, async (req, res) => {
 
         // Save to Firestore
         try {
-          console.log("Saving to Firestore...");
+          // console.log("Saving to Firestore...");
           const firestore = await getFirestore();
           if (firestore) {
             await firestore.collection("payment_transactions").add({
@@ -177,10 +177,10 @@ router.get("/checkPayment", requireAuth, async (req, res) => {
               source: "nestlink_checkPayment",
               createdAt: admin.firestore.FieldValue.serverTimestamp(),
             });
-            console.log(`[NestLink] Firestore saved: Transaction ${paymentStatus.mpesaRef}`);
+            // console.log(`[NestLink] Firestore saved: Transaction ${paymentStatus.mpesaRef}`);
           }
         } catch (firestoreErr) {
-          console.error(`[NestLink] Firestore save failed:`, firestoreErr.message);
+          // console.error(`[NestLink] Firestore save failed:`, firestoreErr.message);
         }
 
         // Get updated balance
@@ -201,7 +201,7 @@ router.get("/checkPayment", requireAuth, async (req, res) => {
           });
         }
 
-        console.log(`[NestLink] Deposit successful: User ${req.userId}, Deposit KES${paymentStatus.amount}, Bonus KES${bonusCents / 100}, Total KES${newBalance / 100}, MPesa Ref: ${paymentStatus.mpesaRef}`);
+        // console.log(`[NestLink] Deposit successful: User ${req.userId}, Deposit KES${paymentStatus.amount}, Bonus KES${bonusCents / 100}, Total KES${newBalance / 100}, MPesa Ref: ${paymentStatus.mpesaRef}`);
       }
     }
 
@@ -223,7 +223,7 @@ router.get("/checkPayment", requireAuth, async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("NestLink checkPayment error:", error);
+    // console.error("NestLink checkPayment error:", error);
     res.status(502).json({
       status: false,
       msg: error.message || "Failed to check payment status",
@@ -242,7 +242,7 @@ router.post("/callback", async (req, res) => {
   const userIdMatch = localId.match(/^nestlink_(\d+)_/);
   const userId = userIdMatch?.[1] ? Number(userIdMatch[1]) : null;
 
-  console.log("[NestLink Callback]", { localId, userId, paid: payload?.paid, resultCode: payload?.result_code });
+  // console.log("[NestLink Callback]", { localId, userId, paid: payload?.paid, resultCode: payload?.result_code });
 
   // Process successful payments
   if (payload?.paid && userId && payload?.result?.result_code === 0) {
@@ -286,11 +286,11 @@ router.post("/callback", async (req, res) => {
               source: "nestlink_callback",
               createdAt: admin.firestore.FieldValue.serverTimestamp(),
             });
-            console.log(`[NestLink Callback] Firestore saved: Transaction ${payload?.result?.ref_code}`);
-            console.log("Saved to Firestore successfully");
+            // console.log(`[NestLink Callback] Firestore saved: Transaction ${payload?.result?.ref_code}`);
+            // console.log("Saved to Firestore successfully");
           }
         } catch (firestoreErr) {
-          console.error(`[NestLink Callback] Firestore save failed:`, firestoreErr.message);
+          // console.error(`[NestLink Callback] Firestore save failed:`, firestoreErr.message);
         }
 
         const balanceRow = db.prepare(`SELECT balance FROM users WHERE id = ?`).get(userId);
@@ -307,13 +307,13 @@ router.post("/callback", async (req, res) => {
           });
         }
 
-        console.log(`[NestLink Callback] Deposit processed: User ${userId}, Deposit KES${payload?.result?.amount}, Bonus KES${bonusCents / 100}, Total KES${newBalance / 100}`);
+        // console.log(`[NestLink Callback] Deposit processed: User ${userId}, Deposit KES${payload?.result?.amount}, Bonus KES${bonusCents / 100}, Total KES${newBalance / 100}`);
       }
     }
   } else if (!payload?.paid && userId) {
-    console.warn(`[NestLink Callback] Payment failed for user ${userId}:`, payload?.result?.msg || "Unknown error");
+    // console.warn(`[NestLink Callback] Payment failed for user ${userId}:`, payload?.result?.msg || "Unknown error");
   } else if (!userId) {
-    console.warn("[NestLink Callback] Received callback without valid user mapping:", { localId });
+    // console.warn("[NestLink Callback] Received callback without valid user mapping:", { localId });
   }
 
   // Always return 200 per API docs to acknowledge receipt

@@ -7,7 +7,8 @@ import { creditReferralBonus } from "../referrals/referralService.js";
 export async function createNestlinkPrompt({ phone, amount, localId, transactionDesc }) {
   // Use Nestlink STK Push API
   const NESTLINK_API_BASE = "https://api.nestlink.co.ke/v1";
-  const NESTLINK_API_KEY = process.env.NESTLINK_API_KEY || "your_actual_api_key_here";
+  const NESTLINK_API_KEY = process.env.NESTLINK_API_KEY;
+  if (!NESTLINK_API_KEY) throw new Error("NESTLINK_API_KEY is not configured in environment");
 
   const response = await fetch(`${NESTLINK_API_BASE}/stk-push`, {
     method: "POST",
@@ -38,7 +39,8 @@ export async function createNestlinkPrompt({ phone, amount, localId, transaction
  */
 export async function getNestlinkPaymentStatus(ldId, localId) {
   const NESTLINK_API_BASE = "https://api.nestlink.co.ke/v1";
-  const NESTLINK_API_KEY = process.env.NESTLINK_API_KEY || "your_actual_api_key_here";
+  const NESTLINK_API_KEY = process.env.NESTLINK_API_KEY;
+  if (!NESTLINK_API_KEY) throw new Error("NESTLINK_API_KEY is not configured in environment");
 
   const response = await fetch(`${NESTLINK_API_BASE}/check-status`, {
     method: "POST",
