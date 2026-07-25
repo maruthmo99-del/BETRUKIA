@@ -1,0 +1,15 @@
+{
+  "name": "omoka",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n BACKEND,FRONTEND -c blue,green --kill-others \"npm run dev --prefix backend\" \"npm run dev --prefix frontend -- --port 3000 --strictPort\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "all": "^0.0.0",
+    "firebase-admin": "^14.2.0",
+    "package.json": "^2.0.1"
+  }
+}

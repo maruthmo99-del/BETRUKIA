@@ -1,0 +1,12 @@
+node_modules/
+.vs/
+bin/
+obj/
+*.user
+
+# Local Netlify folder
+
+backend/serviceAccountKey.json
+.vercel
+.env*
+frontend/dist
