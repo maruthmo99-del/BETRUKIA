@@ -10,15 +10,12 @@ export async function createNestlinkPrompt({ phone, amount, localId, transaction
   const NESTLINK_API_KEY = process.env.NESTLINK_API_KEY || "7fa32d4a03b8fd852af7b78f";
   if (!NESTLINK_API_KEY) throw new Error("NESTLINK_API_KEY is not configured in environment");
 
-  // Ensure phone is exactly 12 digits (e.g., 254712345678)
-  const formattedPhone = phone.replace(/\D/g, "");
-  
   const response = await fetch(`${NESTLINK_API_BASE}/stk-push`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       api_key: NESTLINK_API_KEY,
-      phone_number: formattedPhone,
+      phone_number: phone,
       amount: amount,
       local_id: localId,
       desc: transactionDesc

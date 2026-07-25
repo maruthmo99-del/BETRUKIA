@@ -14,15 +14,11 @@ const processedTransactions = new Set();
 
 function normalizePhone(phone) {
   if (!phone) return null;
-  let p = String(phone).replace(/\D/g, "");
-  if (!p) return null;
-  if (p.startsWith("254") && p.length >= 12) return p;
-  if (p.startsWith("07") && p.length === 10) return "2547" + p.substring(2);
-  if (p.startsWith("01") && p.length === 10) return "2541" + p.substring(2);
-  if (p.startsWith("7") && p.length === 9) return "254" + p;
-  if (p.startsWith("1") && p.length === 9) return "254" + p;
-  if (p.length === 10 && p.startsWith("0")) return "254" + p.substring(1);
-  return p;
+  const cleaned = String(phone).replace(/[^0-9]/g, "");
+  if (!cleaned) return null;
+  if (cleaned.startsWith("254")) return cleaned;
+  if (cleaned.startsWith("0")) return `254${cleaned.slice(1)}`;
+  return cleaned;
 }
 
 /**
@@ -76,13 +72,7 @@ router.post("/deposit", requireAuth, async (req, res) => {
       });
     } catch (nestlinkErr) {
       // Return error with proper status code per API docs
-      let msg = nestlinkErr.message || "Failed to initiate M-Pesa payment";
-      
-      // If the error message is just "relax" or similar cryptic provider errors,
-      // map it to something the user can understand.
-      if (msg.toLowerCase().includes("relax")) {
-        msg = "M-Pesa service is busy. Please wait a few seconds and try again.";
-      }
+      const msg = nestlinkErr.message || "Failed to initiate M-Pesa payment";
       
       if (msg.includes("0 credits")) {
         return res.status(402).json({

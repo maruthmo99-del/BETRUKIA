@@ -4,7 +4,7 @@ import { createNestlinkDeposit, pollNestlinkPayment } from "../nestlink/nestlink
 
 export default function NestlinkDeposit({ token, onSuccess, onBalanceUpdate, userPhone, presets = [100, 150, 200] }) {
   const [amount, setAmount] = useState(String(presets[0] ?? 100));
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState(userPhone || "");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("info");
