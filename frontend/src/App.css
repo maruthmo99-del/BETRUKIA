@@ -477,7 +477,7 @@ img, svg, canvas, video {
   display: grid;
   grid-template-columns: 260px minmax(0, 1fr) 340px;
   gap: 14px;
-  align-items: start;
+  align-items: stretch; /* Change to stretch to fill height */
 }
 .play-layout > * {
   /* Grid items default to min-width: auto, which stops them shrinking
@@ -503,10 +503,9 @@ img, svg, canvas, video {
 .all-bets-panel {
   border-radius: 22px;
   padding: 16px;
-  min-height: 420px;
+  height: 600px; /* Fixed height for desktop */
   display: flex;
   flex-direction: column;
-  max-height: 100%;
   overflow: hidden;
 }
 
@@ -1486,6 +1485,8 @@ img, svg, canvas, video {
   border-radius: 16px;
   padding: 10px;
   flex-shrink: 0;
+  height: auto; /* Allow content height */
+  overflow: visible;
 }
 .balance-line {
   display: flex;
@@ -2670,6 +2671,11 @@ img, svg, canvas, video {
     flex: 0 0 auto;
     max-height: none;
     overflow-y: visible;
+    height: auto;
+  }
+  .all-bets-panel {
+    height: calc(100vh - 200px); /* Fill available space on desktop */
+    min-height: 500px;
   }
   .provably-fair-footer {
     flex: 0 0 auto !important;
@@ -2693,6 +2699,7 @@ img, svg, canvas, video {
     order: -1; /* Keep curve and betting panel at the top */
   }
   .all-bets-panel {
+    height: 400px; /* Force fixed height on mobile */
     max-height: 400px;
     overflow: hidden;
   }
