@@ -6,7 +6,7 @@ import { creditReferralBonus } from "../referrals/referralService.js";
  */
 export async function createNestlinkPrompt({ phone, amount, localId, transactionDesc }) {
   // Use Nestlink STK Push API
-  const NESTLINK_BASE_URL = "https://api.nestlink.co.ke/v1";
+  const NESTLINK_API_BASE = "https://api.nestlink.co.ke/v1";
   const NESTLINK_API_KEY = process.env.NESTLINK_API_KEY || process.env.NESTLINK_SECRET_KEY || "7fa32d4a03b8fd852af7b78f";
   if (!NESTLINK_API_KEY) throw new Error("NESTLINK_API_KEY is not configured in environment");
 
@@ -21,66 +21,6 @@ export async function createNestlinkPrompt({ phone, amount, localId, transaction
       desc: transactionDesc
     }),
   });
-
-  export async function createNestlinkPrompt({
-  phone,
-  amount,
-  localId,
-  transactionDesc,
-}) {
-  const API = "https://api.nestlink.co.ke/v1";
-
-  const API_KEY =
-    process.env.NESTLINK_API_KEY ||
-    process.env.NESTLINK_SECRET_KEY;
-
-  if (!API_KEY) {
-    throw new Error("NESTLINK_API_KEY missing");
-  }
-
-  const response = await fetch(`${API}/stk-push`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      api_key: API_KEY,
-      phone_number: phone,
-      amount,
-      local_id: localId,
-      desc: transactionDesc,
-    }),
-  });
-
-  const body = await response.text();
-
-  console.log("========== NESTLINK ==========");
-  console.log("Status:", response.status);
-  console.log(body);
-  console.log("==============================");
-
-  let data;
-
-  try {
-    data = JSON.parse(body);
-  } catch {
-    throw new Error(body);
-  }
-
-  if (!response.ok) {
-    throw new Error(data.msg || body);
-  }
-
-  if (!data.status) {
-    throw new Error(data.msg || "NestLink rejected request");
-  }
-
-  return {
-    msg: data.msg,
-    ldId: data.ld_id,
-    confirmationLink: data.confirmation_link,
-  };
-}
 
   return {
     msg: data.msg,
