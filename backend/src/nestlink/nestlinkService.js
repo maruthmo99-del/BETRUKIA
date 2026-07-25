@@ -107,7 +107,7 @@ export async function getNestlinkPaymentStatus(ldId, localId) {
     }),
   });
 
-  const data = await response.json();
+  const body = await response.text();  console.log(body);  const data = JSON.parse(body);
   if (!data.status) {
     throw new Error(data.msg || "NestLink check-status failed");
   }
