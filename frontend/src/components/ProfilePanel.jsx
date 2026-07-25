@@ -184,7 +184,7 @@ export default function ProfilePanel({ open, onClose, onOpenHelpFAQ, onOpenRespo
           <div className="avatar-circle">{appUser?.username?.[0] || "U"}</div>
           <div>
             <div className="user-name">{appUser?.username || "Player"}</div>
-            <div className="user-phone">{appUser?.phone ? (appUser.phone.startsWith('+') ? appUser.phone : `+${appUser.phone}`) : null}</div>
+            <div className="user-phone">{appUser?.phone ? (appUser.phone.startsWith('254') ? `+${appUser.phone}` : appUser.phone) : null}</div>
             <div className="user-balance">KES {(balance / 100).toFixed(2)}</div>
           </div>
         </div>

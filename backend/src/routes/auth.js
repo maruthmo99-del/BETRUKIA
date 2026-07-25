@@ -29,11 +29,10 @@ router.post("/session", requireAuth, (req, res) => {
 // that are not present in the Firebase ID token.
 function normalizePhone(phone) {
   if (!phone) return "";
+  // Keep it simple as per original
   let p = phone.replace(/\D/g, "");
-  if (p.startsWith("07")) p = "2547" + p.substring(2);
-  else if (p.startsWith("01")) p = "2541" + p.substring(2);
-  else if (p.startsWith("7") && p.length === 9) p = "254" + p;
-  else if (p.startsWith("1") && p.length === 9) p = "254" + p;
+  if (p.startsWith("0")) p = "254" + p.substring(1);
+  else if (p.length === 9 && (p.startsWith("7") || p.startsWith("1"))) p = "254" + p;
   return p;
 }
 
