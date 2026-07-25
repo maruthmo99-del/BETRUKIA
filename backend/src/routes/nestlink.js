@@ -5,7 +5,7 @@ import { db } from "../db/index.js";
 import { recordWalletTransaction } from "../db/walletTransactions.js";
 import { getFirestore } from "../db/firestore.js";
 import { creditReferralBonus } from "../referrals/referralService.js";
-
+import admin from "firebase-admin";
 
 const router = Router();
 
