@@ -31,7 +31,9 @@ export default function ProfilePanel({ open, onClose, onOpenHelpFAQ, onOpenRespo
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      setReferralStats(data);
+      if (res.ok) {
+        setReferralStats(data);
+      }
     } catch (e) {
       console.error("Failed to fetch referral stats:", e);
     }
@@ -159,7 +161,7 @@ export default function ProfilePanel({ open, onClose, onOpenHelpFAQ, onOpenRespo
 
   return (
     <div className="about-panel-overlay" onClick={onClose}>
-      <div className="about-panel" onClick={(e) => e.stopPropagation()}>
+      <div className="about-panel" onClick={(e) => e.stopPropagation()} style={{ maxHeight: '90vh', overflowY: 'auto' }}>
         <div className="about-panel-header">
           <div>
             <div className="about-panel-title">Account & Support</div>
@@ -195,6 +197,21 @@ export default function ProfilePanel({ open, onClose, onOpenHelpFAQ, onOpenRespo
         </div>
 
         <div className="about-card">
+          <div className="section-heading">Withdraw</div>
+          <div className="stepper-row">
+            <button className="stepper-btn" onClick={() => changePreset(Math.max(0, withdrawAmount - 100), setWithdrawAmount)}>-</button>
+            <input
+              type="number"
+              min="0"
+              value={withdrawAmount}
+              onChange={(e) => updateAmount(e.target.value, setWithdrawAmount)}
+            />
+            <button className="stepper-btn" onClick={() => changePreset(withdrawAmount + 100, setWithdrawAmount)}>+</button>
+          </div>
+          <button className="primary-action withdraw-btn" onClick={handleWithdraw}>Withdraw with M-Pesa</button>
+        </div>
+
+        <div className="about-card">
           <div className="section-heading">Referral Ambassador Program</div>
           {referralStats ? (
             <div className="referral-dashboard">
@@ -206,11 +223,11 @@ export default function ProfilePanel({ open, onClose, onOpenHelpFAQ, onOpenRespo
               <div className="referral-stats-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
                 <div className="stat-item" style={{ background: 'rgba(255,255,255,0.03)', padding: 10, borderRadius: 8 }}>
                   <div className="stats-label">Balance</div>
-                  <div className="user-balance" style={{ fontSize: 18 }}>KES {(referralStats.currentBalance / 100).toFixed(2)}</div>
+                  <div className="user-balance" style={{ fontSize: 18 }}>KES {(Number(referralStats.currentBalance || 0) / 100).toFixed(2)}</div>
                 </div>
                 <div className="stat-item" style={{ background: 'rgba(255,255,255,0.03)', padding: 10, borderRadius: 8 }}>
                   <div className="stats-label">Lifetime</div>
-                  <div className="user-balance" style={{ fontSize: 18, color: '#4ade80' }}>KES {(referralStats.lifetimeEarnings / 100).toFixed(2)}</div>
+                  <div className="user-balance" style={{ fontSize: 18, color: '#4ade80' }}>KES {(Number(referralStats.lifetimeEarnings || 0) / 100).toFixed(2)}</div>
                 </div>
               </div>
 
@@ -239,8 +256,8 @@ export default function ProfilePanel({ open, onClose, onOpenHelpFAQ, onOpenRespo
               </div>
 
               <div className="social-links" style={{ display: 'flex', gap: 10, marginTop: 12 }}>
-                <a href="https://wa.me/?text=Join%20Betrukia%20and%20get%2050%25%20bonus%20on%20your%20first%20deposit!%20Use%20my%20link:%20" target="_blank" rel="noreferrer" className="secondary-action" style={{ flex: 1, textAlign: 'center', background: '#25D366', color: '#fff' }}>WhatsApp</a>
-                <a href="https://t.me/share/url?url=https://kuomoka.co.ke&text=Join%20Betrukia!" target="_blank" rel="noreferrer" className="secondary-action" style={{ flex: 1, textAlign: 'center', background: '#0088cc', color: '#fff' }}>Telegram</a>
+                <a href={`https://wa.me/?text=Join%20Betrukia%20and%20get%2050%25%20bonus%20on%20your%20first%20deposit!%20Use%20my%20link:%20${encodeURIComponent(referralStats.referralLink)}`} target="_blank" rel="noreferrer" className="secondary-action" style={{ flex: 1, textAlign: 'center', background: '#25D366', color: '#fff' }}>WhatsApp</a>
+                <a href={`https://t.me/share/url?url=${encodeURIComponent(referralStats.referralLink)}&text=Join%20Betrukia!`} target="_blank" rel="noreferrer" className="secondary-action" style={{ flex: 1, textAlign: 'center', background: '#0088cc', color: '#fff' }}>Telegram</a>
               </div>
 
               <div className="activities-list" style={{ marginTop: 16 }}>
@@ -253,7 +270,7 @@ export default function ProfilePanel({ open, onClose, onOpenHelpFAQ, onOpenRespo
                           <span style={{ color: act.event_type === 'withdrawal' ? '#fb7185' : '#4ade80' }}>
                             {act.event_type === 'withdrawal' ? 'Withdrawal' : `Deposit from ${act.friend_name || 'Friend'}`}
                           </span>
-                          <span>KES {(act.amount / 100).toFixed(2)}</span>
+                          <span>KES {(Number(act.amount || 0) / 100).toFixed(2)}</span>
                         </div>
                         <div style={{ color: '#64748b', fontSize: 10 }}>{new Date(act.created_at).toLocaleString()}</div>
                       </div>
@@ -267,21 +284,6 @@ export default function ProfilePanel({ open, onClose, onOpenHelpFAQ, onOpenRespo
           ) : (
             <div className="muted">Loading referral dashboard...</div>
           )}
-        </div>
-
-        <div className="about-card">
-          <div className="section-heading">Withdraw</div>
-          <div className="stepper-row">
-            <button className="stepper-btn" onClick={() => changePreset(Math.max(0, withdrawAmount - 100), setWithdrawAmount)}>-</button>
-            <input
-              type="number"
-              min="0"
-              value={withdrawAmount}
-              onChange={(e) => updateAmount(e.target.value, setWithdrawAmount)}
-            />
-            <button className="stepper-btn" onClick={() => changePreset(withdrawAmount + 100, setWithdrawAmount)}>+</button>
-          </div>
-          <button className="primary-action withdraw-btn" onClick={handleWithdraw}>Withdraw with M-Pesa</button>
         </div>
 
         <div className="about-card">

@@ -18,6 +18,15 @@ export default function AuthForm({ signUp, signIn, authError }) {
     }
   }, []);
 
+  function normalizePhone(raw) {
+    if (!raw) return "";
+    let p = raw.replace(/\D/g, "");
+    if (p.startsWith("07")) p = "2547" + p.substring(2);
+    else if (p.startsWith("01")) p = "2541" + p.substring(2);
+    else if ((p.startsWith("7") || p.startsWith("1")) && p.length === 9) p = "254" + p;
+    return p;
+  }
+
   async function submit(e) {
     e.preventDefault();
     setLoading(true);
@@ -25,7 +34,8 @@ export default function AuthForm({ signUp, signIn, authError }) {
       if (mode === "login") {
         await signIn(identifier, password);
       } else {
-        await signUp({ name, phone, identifier, password, referralCode });
+        const normalizedPhone = normalizePhone(phone);
+        await signUp({ name, phone: normalizedPhone, identifier, password, referralCode });
       }
     } catch {
       // authError is already set by useAuth; nothing else to do here.

@@ -94,7 +94,7 @@ export function getReferralStats(userId) {
   `).get(userId)?.total || 0;
 
   const activities = db.prepare(`
-    SELECT e.event_type, e.amount, e.created_at, u.username as friend_name
+    SELECT e.event_type, e.amount, e.created_at, u.display_name as friend_name
     FROM referral_events e
     LEFT JOIN users u ON e.user_id = u.id
     WHERE e.referral_code = ? OR (e.user_id = ? AND e.event_type = 'withdrawal')
@@ -105,11 +105,14 @@ export function getReferralStats(userId) {
   return {
     code,
     referralLink: `https://kuomoka.co.ke/?ref=${code}`,
-    currentBalance: user.referral_balance || 0,
-    lifetimeEarnings,
-    withdrawnEarnings: withdrawals,
-    pendingEarnings: 0, // Simplified for now
-    activities
+    currentBalance: Number(user.referral_balance || 0),
+    lifetimeEarnings: Number(lifetimeEarnings || 0),
+    withdrawnEarnings: Number(withdrawals || 0),
+    pendingEarnings: 0,
+    activities: activities.map(a => ({
+      ...a,
+      amount: Number(a.amount || 0)
+    }))
   };
 }
 

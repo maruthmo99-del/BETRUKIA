@@ -14,16 +14,18 @@ export default function NestlinkDeposit({ token, onSuccess, onBalanceUpdate, use
 
   // Sync phone with userPhone prop when it becomes available
   useEffect(() => {
-    if (userPhone && !phone) {
-      let formatted = userPhone;
-      if (formatted.startsWith("0")) {
-        formatted = "254" + formatted.substring(1);
-      } else if (!formatted.startsWith("254") && formatted.length === 9) {
+    if (userPhone) {
+      let formatted = userPhone.replace(/\D/g, "");
+      if (formatted.startsWith("07")) {
+        formatted = "2547" + formatted.substring(2);
+      } else if (formatted.startsWith("01")) {
+        formatted = "2541" + formatted.substring(2);
+      } else if ((formatted.startsWith("7") || formatted.startsWith("1")) && formatted.length === 9) {
         formatted = "254" + formatted;
       }
       setPhone(formatted);
     }
-  }, [userPhone, phone]);
+  }, [userPhone]);
 
   const canSubmit = useMemo(() => Number(amount) > 0 && phone.trim().length >= 10 && !loading && !polling, [amount, phone, loading, polling]);
 

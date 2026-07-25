@@ -27,6 +27,16 @@ router.post("/session", requireAuth, (req, res) => {
 // Update the local profile (display name and phone). Called by the
 // client once after registration completes to persist extra fields
 // that are not present in the Firebase ID token.
+function normalizePhone(phone) {
+  if (!phone) return "";
+  let p = phone.replace(/\D/g, "");
+  if (p.startsWith("07")) p = "2547" + p.substring(2);
+  else if (p.startsWith("01")) p = "2541" + p.substring(2);
+  else if (p.startsWith("7") && p.length === 9) p = "254" + p;
+  else if (p.startsWith("1") && p.length === 9) p = "254" + p;
+  return p;
+}
+
 router.post("/profile", requireAuth, (req, res) => {
   const { displayName, phone } = req.body || {};
   if (!displayName && !phone) return res.status(400).json({ error: "Nothing to update" });
@@ -38,13 +48,22 @@ router.post("/profile", requireAuth, (req, res) => {
   }
   if (phone) {
     updates.push("phone = ?");
-    params.push(phone);
+    params.push(normalizePhone(phone));
   }
   params.push(req.userId);
   const stmt = db.prepare(`UPDATE users SET ${updates.join(", ")} WHERE id = ?`);
   stmt.run(...params);
   const user = db.prepare(`SELECT * FROM users WHERE id = ?`).get(req.userId);
-  res.json({ user: { id: user.id, username: displayNameFor(user), email: user.email, balance: user.balance, isAdmin: !!user.is_admin } });
+  res.json({ 
+    user: { 
+      id: user.id, 
+      username: displayNameFor(user), 
+      phone: user.phone || null,
+      email: user.email, 
+      balance: user.balance, 
+      isAdmin: !!user.is_admin 
+    } 
+  });
 });
 
 // Create or retrieve a server-side demo account and return a demo token.

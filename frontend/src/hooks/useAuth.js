@@ -131,19 +131,23 @@ export function useAuth() {
       const profileData = await profileRes.json().catch(() => ({}));
       if (!profileRes.ok) throw new Error(profileData.error || "Unable to finish account setup.");
 
-      let sessionRes;
-      try {
-        sessionRes = await fetch(`${API_URL}/api/auth/session`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-        });
-      } catch (fetchErr) {
-        console.error("[useAuth] signUp: session fetch failed -", fetchErr.message, "API_URL:", API_URL);
-        throw new Error(`Cannot reach server at ${API_URL} - ${fetchErr.message}`);
+      if (profileData.user) {
+        setAppUser(profileData.user);
+      } else {
+        let sessionRes;
+        try {
+          sessionRes = await fetch(`${API_URL}/api/auth/session`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` },
+          });
+        } catch (fetchErr) {
+          console.error("[useAuth] signUp: session fetch failed -", fetchErr.message, "API_URL:", API_URL);
+          throw new Error(`Cannot reach server at ${API_URL} - ${fetchErr.message}`);
+        }
+        const sessionData = await sessionRes.json().catch(() => ({}));
+        if (!sessionRes.ok) throw new Error(sessionData.error || "Unable to finish sign-in.");
+        setAppUser(sessionData.user);
       }
-      const sessionData = await sessionRes.json().catch(() => ({}));
-      if (!sessionRes.ok) throw new Error(sessionData.error || "Unable to finish sign-in.");
-      setAppUser(sessionData.user);
       setAuthError(null);
     } catch (err) {
       setAuthError(friendlyFirebaseError(err));
