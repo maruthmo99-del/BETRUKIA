@@ -506,6 +506,8 @@ img, svg, canvas, video {
   min-height: 420px;
   display: flex;
   flex-direction: column;
+  max-height: 100%;
+  overflow: hidden;
 }
 
 .chat-panel {
@@ -1483,6 +1485,7 @@ img, svg, canvas, video {
 .bet-panel {
   border-radius: 16px;
   padding: 10px;
+  flex-shrink: 0;
 }
 .balance-line {
   display: flex;
@@ -2645,6 +2648,7 @@ img, svg, canvas, video {
   }
   .all-bets-list {
     overflow-y: auto;
+    flex: 1;
     min-height: 0;
   }
   .chat-messages {
@@ -2664,8 +2668,8 @@ img, svg, canvas, video {
   }
   .bet-panel {
     flex: 0 0 auto;
-    max-height: 46%;
-    overflow-y: auto;
+    max-height: none;
+    overflow-y: visible;
   }
   .provably-fair-footer {
     flex: 0 0 auto !important;
@@ -2681,6 +2685,21 @@ img, svg, canvas, video {
    small screens (normal page scroll is expected here).
    ============================================================ */
 @media (max-width: 760px) {
+  .play-layout {
+    display: flex;
+    flex-direction: column;
+  }
+  .play-main {
+    order: -1; /* Keep curve and betting panel at the top */
+  }
+  .all-bets-panel {
+    max-height: 400px;
+    overflow: hidden;
+  }
+  .all-bets-list {
+    overflow-y: auto;
+    flex: 1;
+  }
   .app-shell {
     padding-top: 12px;
   }
