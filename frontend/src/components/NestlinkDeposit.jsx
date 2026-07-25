@@ -1,7 +1,6 @@
 import { useMemo, useState, useCallback, useEffect } from "react";
 import { createNestlinkDeposit, pollNestlinkPayment } from "../nestlink/nestlinkApi.js";
 
-
 export default function NestlinkDeposit({ token, onSuccess, onBalanceUpdate, userPhone, presets = [100, 150, 200] }) {
   const [amount, setAmount] = useState(String(presets[0] ?? 100));
   const [phone, setPhone] = useState(userPhone || "");
@@ -14,18 +13,10 @@ export default function NestlinkDeposit({ token, onSuccess, onBalanceUpdate, use
 
   // Sync phone with userPhone prop when it becomes available
   useEffect(() => {
-    if (userPhone) {
-      let formatted = userPhone.replace(/\D/g, "");
-      if (formatted.startsWith("07")) {
-        formatted = "2547" + formatted.substring(2);
-      } else if (formatted.startsWith("01")) {
-        formatted = "2541" + formatted.substring(2);
-      } else if ((formatted.startsWith("7") || formatted.startsWith("1")) && formatted.length === 9) {
-        formatted = "254" + formatted;
-      }
-      setPhone(formatted);
+    if (userPhone && !phone) {
+      setPhone(userPhone);
     }
-  }, [userPhone]);
+  }, [userPhone, phone]);
 
   const canSubmit = useMemo(() => Number(amount) > 0 && phone.trim().length >= 10 && !loading && !polling, [amount, phone, loading, polling]);
 
@@ -58,7 +49,7 @@ export default function NestlinkDeposit({ token, onSuccess, onBalanceUpdate, use
         setMessage(pollResult.msg);
         onBalanceUpdate?.(pollResult.currentBalance);
         onSuccess?.(pollResult);
-        // Don't reset phone, just clear other states
+        setPhone(userPhone || "");
         setAmount(String(presets[0] ?? 100));
         setPollData(null);
       } else {
@@ -74,7 +65,7 @@ export default function NestlinkDeposit({ token, onSuccess, onBalanceUpdate, use
       setPolling(false);
       setPollProgress(0);
     }
-  }, [token, pollData, presets, onSuccess, onBalanceUpdate]);
+  }, [token, pollData, presets, onSuccess, onBalanceUpdate, userPhone]);
 
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
@@ -91,10 +82,9 @@ export default function NestlinkDeposit({ token, onSuccess, onBalanceUpdate, use
 
     try {
       // Step 1: Initiate M-Pesa STK Push
-      const normalizedPhone = phone.trim().replace(/\D/g, "");
       const depositData = await createNestlinkDeposit({
         amount: Number(amount),
-        phone: normalizedPhone,
+        phone: phone.trim(),
         token: resolvedToken,
       });
 
@@ -129,6 +119,7 @@ export default function NestlinkDeposit({ token, onSuccess, onBalanceUpdate, use
         onSuccess?.(pollResult);
         
         // Reset form
+        setPhone(userPhone || "");
         setAmount(String(presets[0] ?? 100));
         setPollData(null);
       } else {
@@ -166,7 +157,7 @@ export default function NestlinkDeposit({ token, onSuccess, onBalanceUpdate, use
       setPolling(false);
       setPollProgress(0);
     }
-  }, [token, amount, phone, presets, onSuccess, onBalanceUpdate]);
+  }, [token, amount, phone, presets, onSuccess, onBalanceUpdate, userPhone]);
 
   return (
     <div className="panel">
@@ -199,7 +190,7 @@ export default function NestlinkDeposit({ token, onSuccess, onBalanceUpdate, use
         />
         <input
           type="tel"
-          placeholder="Phone e.g. 254712345678"
+          placeholder="Phone e.g. 0712345678"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           className="wallet-input"
