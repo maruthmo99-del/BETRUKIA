@@ -91,9 +91,10 @@ export default function NestlinkDeposit({ token, onSuccess, onBalanceUpdate, use
 
     try {
       // Step 1: Initiate M-Pesa STK Push
+      const normalizedPhone = phone.trim().replace(/\D/g, "");
       const depositData = await createNestlinkDeposit({
         amount: Number(amount),
-        phone: phone.trim(),
+        phone: normalizedPhone,
         token: resolvedToken,
       });
 
