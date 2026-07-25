@@ -29,7 +29,8 @@ const getDefaultServerUrl = () => {
     if (previewBackendUrl) return previewBackendUrl;
   }
 
-  return currentOrigin;
+  // Production fallback: point to the known backend on Render if not on localhost
+  return "https://betrukia.onrender.com";
 };
 
 export const API_URL = configuredBaseUrl || getDefaultServerUrl();

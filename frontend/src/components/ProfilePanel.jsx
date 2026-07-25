@@ -32,7 +32,15 @@ export default function ProfilePanel({ open, onClose, onOpenHelpFAQ, onOpenRespo
       });
       const data = await res.json();
       if (res.ok) {
-        setReferralStats(data);
+        setReferralStats({
+          code: data.code || "----",
+          referralLink: data.referralLink || `https://kuomoka.co.ke/?ref=${data.code || ""}`,
+          currentBalance: data.currentBalance || 0,
+          lifetimeEarnings: data.lifetimeEarnings || 0,
+          withdrawnEarnings: data.withdrawnEarnings || 0,
+          pendingEarnings: data.pendingEarnings || 0,
+          activities: data.activities || []
+        });
       }
     } catch (e) {
       console.error("Failed to fetch referral stats:", e);
