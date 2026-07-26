@@ -71,37 +71,26 @@ router.post("/deposit", requireAuth, async (req, res) => {
         },
       });
     } catch (nestlinkErr) {
-      // Return error with proper status code per API docs
-      const msg = nestlinkErr.message || "Failed to initiate M-Pesa payment";
-      
-      if (msg.includes("0 credits")) {
-        return res.status(402).json({
-          status: false,
-          msg,
-          data: { credit_empty: true },
-        });
-      }
-      
-      if (msg.includes("Rate limited")) {
-        return res.status(429).json({
-          status: false,
-          msg,
-        });
-      }
 
-      return res.status(502).json({
-        status: false,
-        msg,
-      });
-    }
+  console.error("NestLink Error:");
+  console.error(nestlinkErr);
+
+  return res.status(502).json({
+    status: false,
+    msg: nestlinkErr.message,
+  });
+
+}
   } catch (error) {
-    // console.error("NestLink deposit error:", error);
-    res.status(500).json({
-      status: false,
-      msg: "Deposit request failed",
-      error: error.message,
-    });
-  }
+
+  console.error(error);
+
+  res.status(500).json({
+    status: false,
+    msg: error.message,
+  });
+
+}
 });
 
 /**
