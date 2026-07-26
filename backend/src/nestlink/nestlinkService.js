@@ -1,24 +1,24 @@
-import { db } from "../db/index.js";
-import { creditReferralBonus } from "../referrals/referralService.js";
-
 /**
- * Creates a Nestlink payment prompt / invoice for deposits
+ * backend/src/nestlink/nestlinkService.js
  */
+
+const API =
+  process.env.NESTLINK_BASE_URL || "https://api.nestlink.co.ke/v1";
+
+const API_KEY =
+  process.env.NESTLINK_API_KEY ||
+  process.env.NESTLINK_SECRET_KEY;
+
+if (!API_KEY) {
+  console.warn("NESTLINK_API_KEY not configured");
+}
+
 export async function createNestlinkPrompt({
   phone,
   amount,
   localId,
   transactionDesc,
 }) {
-  const API = process.env.NESTLINK_BASE_URL || "https://api.nestlink.co.ke/v1";
-
-  const API_KEY =
-    process.env.NESTLINK_API_KEY ||
-    process.env.NESTLINK_SECRET_KEY;
-
-  if (!API_KEY) {
-    throw new Error("NESTLINK_API_KEY missing");
-  }
 
   const response = await fetch(`${API}/stk-push`, {
     method: "POST",
@@ -34,23 +34,23 @@ export async function createNestlinkPrompt({
     }),
   });
 
-  const body = await response.text();
+  const text = await response.text();
 
-  console.log("========== NESTLINK ==========");
-  console.log("Status:", response.status);
-  console.log(body);
+  console.log("========== STK PUSH ==========");
+  console.log("HTTP:", response.status);
+  console.log(text);
   console.log("==============================");
 
   let data;
 
   try {
-    data = JSON.parse(body);
+    data = JSON.parse(text);
   } catch {
-    throw new Error(body);
+    throw new Error(text);
   }
 
   if (!response.ok) {
-    throw new Error(data.msg || body);
+    throw new Error(data.msg || text);
   }
 
   if (!data.status) {
@@ -64,27 +64,40 @@ export async function createNestlinkPrompt({
   };
 }
 
-/**
- * Checks and updates the status of a Nestlink payment
- */
 export async function getNestlinkPaymentStatus(ldId, localId) {
-  const NESTLINK_API_BASE = "https://api.nestlink.co.ke/v1";
-  const NESTLINK_API_KEY = process.env.NESTLINK_API_KEY || process.env.NESTLINK_SECRET_KEY || "7fa32d4a03b8fd852af7b78f";
-  if (!NESTLINK_API_KEY) throw new Error("NESTLINK_API_KEY is not configured in environment");
 
-  const response = await fetch(`${NESTLINK_API_BASE}/check-status`, {
+  const response = await fetch(`${API}/check-status`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify({
-      api_key: NESTLINK_API_KEY,
+      api_key: API_KEY,
       ld_id: ldId,
-      local_id: localId
+      local_id: localId,
     }),
   });
 
-  const body = await response.text();  console.log("====== CHECK STATUS ======"); console.log("Status:", response.status); console.log(body); console.log("==========================");  const data = JSON.parse(body);
+  const text = await response.text();
+
+  console.log("======= CHECK STATUS =======");
+  console.log(text);
+  console.log("============================");
+
+  let data;
+
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new Error(text);
+  }
+
+  if (!response.ok) {
+    throw new Error(data.msg || text);
+  }
+
   if (!data.status) {
-    throw new Error(data.msg || "NestLink check-status failed");
+    throw new Error(data.msg || "Status request failed");
   }
 
   return {
@@ -93,6 +106,6 @@ export async function getNestlinkPaymentStatus(ldId, localId) {
     amount: data.result?.amount,
     mpesaRef: data.result?.ref_code,
     phone: data.result?.phone_number,
-    msg: data.msg
+    msg: data.msg,
   };
 }
