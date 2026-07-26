@@ -107,7 +107,62 @@ export async function getNestlinkPaymentStatus(ldId, localId) {
       msg: data.msg,
     };
   }
+const result = data.data?.result || {};
+const code = Number(result.result_code);
 
+if (data.data?.paid === true || code === 0) {
+  return {
+    status: "success",
+    paid: true,
+    amount: data.data.amount,
+    mpesaRef: result.mpesa_ref,
+    phone: result.phone,
+    msg: data.msg,
+  };
+}
+
+// User cancelled
+if (code === 1032) {
+  return {
+    status: "cancelled",
+    paid: false,
+    msg: "Payment cancelled by user.",
+  };
+}
+
+// Wrong PIN
+if (code === 2001) {
+  return {
+    status: "failed",
+    paid: false,
+    msg: "Incorrect M-Pesa PIN.",
+  };
+}
+
+// Insufficient balance
+if (code === 1) {
+  return {
+    status: "failed",
+    paid: false,
+    msg: "Insufficient M-Pesa balance.",
+  };
+}
+
+// Timeout
+if (code === 1037) {
+  return {
+    status: "failed",
+    paid: false,
+    msg: "M-Pesa request timed out.",
+  };
+}
+
+// Still waiting
+return {
+  status: "pending",
+  paid: false,
+  msg: data.msg,
+};
   return {
     status: data.data.paid ? "success" : "pending",
     paid: data.data.paid,
