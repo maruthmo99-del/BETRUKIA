@@ -1,42 +1,39 @@
+const NESTLINK_API_BASE =
+  process.env.NESTLINK_BASE_URL || "https://api.nestlink.co.ke";
+
+const NESTLINK_API_KEY =
+  process.env.NESTLINK_API_KEY || process.env.NESTLINK_SECRET_KEY;
+
 /**
- * backend/src/nestlink/nestlinkService.js
+ * Send STK Push
  */
-
-const API =
-  process.env.NESTLINK_BASE_URL || "https://api.nestlink.co.ke/v1";
-
-const API_KEY =
-  process.env.NESTLINK_API_KEY ||
-  process.env.NESTLINK_SECRET_KEY;
-
-if (!API_KEY) {
-  console.warn("NESTLINK_API_KEY not configured");
-}
-
 export async function createNestlinkPrompt({
   phone,
   amount,
   localId,
   transactionDesc,
 }) {
+  if (!NESTLINK_API_KEY) {
+    throw new Error("NESTLINK_API_KEY is missing");
+  }
 
-  const response = await fetch(`${API}/stk-push`, {
+  const response = await fetch(`${NESTLINK_API_BASE}/runPrompt`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      "Api-Secret": NESTLINK_API_KEY,
     },
     body: JSON.stringify({
-      api_key: API_KEY,
-      phone_number: phone,
+      phone,
       amount,
       local_id: localId,
-      desc: transactionDesc,
+      transaction_desc: transactionDesc,
     }),
   });
 
   const text = await response.text();
 
-  console.log("========== STK PUSH ==========");
+  console.log("===== NestLink runPrompt =====");
   console.log("HTTP:", response.status);
   console.log(text);
   console.log("==============================");
@@ -59,30 +56,37 @@ export async function createNestlinkPrompt({
 
   return {
     msg: data.msg,
-    ldId: data.ld_id,
-    confirmationLink: data.confirmation_link,
+    ldId: data.data.ld_id,
+    confirmationLink: data.data.ConfirmationLink,
   };
 }
 
+/**
+ * Check payment status
+ */
 export async function getNestlinkPaymentStatus(ldId, localId) {
+  if (!NESTLINK_API_KEY) {
+    throw new Error("NESTLINK_API_KEY is missing");
+  }
 
-  const response = await fetch(`${API}/check-status`, {
-    method: "POST",
+  const url =
+    `${NESTLINK_API_BASE}/paymentStatus` +
+    `?ld_id=${encodeURIComponent(ldId)}` +
+    `&local_id=${encodeURIComponent(localId)}`;
+
+  const response = await fetch(url, {
+    method: "GET",
     headers: {
-      "Content-Type": "application/json",
+      "Api-Secret": NESTLINK_API_KEY,
     },
-    body: JSON.stringify({
-      api_key: API_KEY,
-      ld_id: ldId,
-      local_id: localId,
-    }),
   });
 
   const text = await response.text();
 
-  console.log("======= CHECK STATUS =======");
+  console.log("===== NestLink paymentStatus =====");
+  console.log("HTTP:", response.status);
   console.log(text);
-  console.log("============================");
+  console.log("==================================");
 
   let data;
 
@@ -97,15 +101,19 @@ export async function getNestlinkPaymentStatus(ldId, localId) {
   }
 
   if (!data.status) {
-    throw new Error(data.msg || "Status request failed");
+    return {
+      status: "pending",
+      paid: false,
+      msg: data.msg,
+    };
   }
 
   return {
-    status: data.paid ? "success" : "pending",
-    paid: data.paid,
-    amount: data.result?.amount,
-    mpesaRef: data.result?.ref_code,
-    phone: data.result?.phone_number,
+    status: data.data.paid ? "success" : "pending",
+    paid: data.data.paid,
+    amount: data.data.amount,
+    mpesaRef: data.data.result?.mpesa_ref,
+    phone: String(data.data.result?.phone || ""),
     msg: data.msg,
   };
 }
