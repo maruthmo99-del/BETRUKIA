@@ -92,16 +92,23 @@ export async function pollNestlinkPayment({ ldId, localId, token, maxAttempts = 
         };
       }
       
-      // Failed
-      if (status.status === "failed") {
-        console.log(`[NestLink Poll] Payment failed on attempt ${attempt + 1}:`, status);
-        return {
-          success: false,
-          status: status.status || "failed",
-          msg: status.msg || "Payment was not completed. Please try again.",
-          currentBalance: status.currentBalance,
-        };
-      }
+      // Cancelled
+if (status.status === "cancelled") {
+  return {
+    success: false,
+    status: "cancelled",
+    msg: status.msg,
+  };
+}
+
+// Failed
+if (status.status === "failed") {
+  return {
+    success: false,
+    status: "failed",
+    msg: status.msg,
+  };
+}
       
       // Still pending, wait before next attempt
       if (attempt < maxAttempts - 1) {
