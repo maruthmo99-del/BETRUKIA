@@ -3,7 +3,7 @@ import { generateServerSeed, hashSeed, computeCrashPoint } from "./provablyFair.
 
 const WAITING_MS = 10000; // 10-second betting window for players to place/adjust bets
 const TICK_MS = 100; // multiplier update interval
-const MAX_ROUND_DURATION_MS = 100000; // hard watchdog cap to force crash if a round hangs
+const MAX_ROUND_DURATION_MS = 25000; // hard watchdog cap to force crash if a round hangs
 const GROWTH = 0.00012; // controls curve steepness
 
 const { MIN_BET_CENTS, MAX_BET_CENTS, MAX_BETS_PER_ROUND, MAX_AUTO_CASHOUT } = GAME_CONFIG;
@@ -133,15 +133,12 @@ export class RoundManager {
       try {
         const elapsed = Date.now() - this.flyStart;
         if (elapsed >= MAX_ROUND_DURATION_MS) {
-          const forcedMultiplier = multiplierAtElapsed(elapsed);
           console.log("[roundManager] watchdog triggered, forcing crash after max round duration", {
             roundId: this.roundId,
             elapsed,
             maxDuration: MAX_ROUND_DURATION_MS,
-            originalCrashPoint: this.crashPoint,
-            forcedMultiplier,
+            crashPoint: this.crashPoint,
           });
-          this.crashPoint = forcedMultiplier;
           this.crash();
           return;
         }

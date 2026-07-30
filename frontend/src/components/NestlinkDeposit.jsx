@@ -126,20 +126,13 @@ export default function NestlinkDeposit({ token, onSuccess, onBalanceUpdate, use
         // Payment failed
         setMessageType("error");
         if (pollResult.status === "cancelled") {
-  setMessage("❌ Payment was cancelled from your M-Pesa phone.");
-}
-else if (pollResult.status === "timeout") {
-  setMessage(
-    "⏱ Payment check timed out.\n\nYour payment may still be processing."
-  );
-}
-else {
-  setMessage(`❌ ${pollResult.msg}`);
-}
-        } else {
+          setMessage("❌ Payment was cancelled from your M-Pesa phone.");
+        } else if (pollResult.status === "timeout") {
           setMessage(
-            `❌ ${pollResult.msg}\n\n⟳ Would you like to try again?`
+            "⏱ Payment check timed out.\n\nYour payment may still be processing."
           );
+        } else {
+          setMessage(`❌ ${pollResult.msg}`);
         }
         if (pollResult.currentBalance !== undefined) {
           onBalanceUpdate?.(pollResult.currentBalance);
