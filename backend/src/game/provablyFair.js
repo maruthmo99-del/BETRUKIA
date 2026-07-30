@@ -10,15 +10,23 @@ export function hashSeed(serverSeed) {
   return crypto.createHash("sha256").update(serverSeed).digest("hex");
 }
 
+// House edge: the fraction of rounds that instantly crash at 1.00x, and also
+// the fraction shaved off the payout curve for every other round. 0.02 = 2%.
+const HOUSE_EDGE = 0.02;
+
 /**
- * Computes a crash point based on explicit probability distributions:
- * - 35% chance: Randomly between 1.00x and 10.99x
- * - 20% chance: Randomly between 11.00x and 35.00x
- * - 15% chance: Randomly between 35.10x and 50.00x
- * - 10% chance: Randomly between 50.10x and 75.00x
- * - 9% chance: Randomly between 75.10x and 90.00x
- * - 7% chance: Randomly between 90.10x and 110.00x
- * - 4% chance: Randomly from 110.10x climbing out towards infinity (capped at 20,000x)
+ * Computes a crash point using a continuous provably-fair curve (the same
+ * approach used by standard crash games like Aviator/Spribe-style titles),
+ * rather than fixed brackets. This naturally produces a smooth, unpredictable
+ * spread: most rounds cluster low (roughly half crash under ~2x), it gets
+ * steadily rarer to reach higher multipliers, and there is no fixed pattern
+ * or relationship between one round's result and the next.
+ *
+ * Formula: crashPoint = floor(100 * (1 - HOUSE_EDGE) / (1 - X)) / 100
+ * where X is a uniform random float in [0, 1) derived from the round hash.
+ * A HOUSE_EDGE-sized slice of rounds instantly resolve at 1.00x — this is
+ * what gives the house its edge; every other multiplier is unpredictable
+ * and can fall anywhere from just above 1.00x up to the cap below.
  */
 export function computeCrashPoint(serverSeed, roundId, clientSeed = "rukia") {
   const combined = `${serverSeed}:${roundId}:${clientSeed}`;
@@ -27,56 +35,16 @@ export function computeCrashPoint(serverSeed, roundId, clientSeed = "rukia") {
   const h = parseInt(hash.slice(0, 13), 16);
   const X = h / MAX_HEX_INT; // Uniformly distributed float between 0 and 1
 
-  let crashMultiplierHundredths = 100;
+  const maxCap = 2000000; // 20,000.00x hard ceiling
 
-  if (X < 0.35) {
-    // 1. Bracket 1 (35% weight): 1.00x to 10.99x
-    const normalized = X / 0.35;
-    const minRange = 100;
-    const maxRange = 1099;
-    crashMultiplierHundredths = minRange + Math.floor(normalized * (maxRange - minRange + 1));
-  } else if (X < 0.55) {
-    // 2. Bracket 2 (20% weight): 11.00x to 35.00x
-    const normalized = (X - 0.35) / 0.20;
-    const minRange = 1100;
-    const maxRange = 3500;
-    crashMultiplierHundredths = minRange + Math.floor(normalized * (maxRange - minRange + 1));
-  } else if (X < 0.70) {
-    // 3. Bracket 3 (15% weight): 35.10x to 50.00x
-    const normalized = (X - 0.55) / 0.15;
-    const minRange = 3510;
-    const maxRange = 5000;
-    crashMultiplierHundredths = minRange + Math.floor(normalized * (maxRange - minRange + 1));
-  } else if (X < 0.80) {
-    // 4. Bracket 4 (10% weight): 50.10x to 75.00x
-    const normalized = (X - 0.70) / 0.10;
-    const minRange = 5010;
-    const maxRange = 7500;
-    crashMultiplierHundredths = minRange + Math.floor(normalized * (maxRange - minRange + 1));
-  } else if (X < 0.89) {
-    // 5. Bracket 5 (9% weight): 75.10x to 90.00x
-    const normalized = (X - 0.80) / 0.09;
-    const minRange = 7510;
-    const maxRange = 9000;
-    crashMultiplierHundredths = minRange + Math.floor(normalized * (maxRange - minRange + 1));
-  } else if (X < 0.96) {
-    // 6. Bracket 6 (7% weight): 90.10x to 110.00x
-    const normalized = (X - 0.89) / 0.07;
-    const minRange = 9010;
-    const maxRange = 11000;
-    crashMultiplierHundredths = minRange + Math.floor(normalized * (maxRange - minRange + 1));
-  } else {
-    // 7. Bracket 7 (4% weight): 110.10x climbing out towards infinity, capped at 20,000x
-    const normalized = (X - 0.96) / 0.04;
-    const minRange = 11010;
-    const maxCap = 2000000; // 20,000.00x hard ceiling
-
-    const factor = 1 / (1 - normalized * 0.999);
-    crashMultiplierHundredths = Math.min(maxCap, Math.floor(minRange * factor));
+  if (X < HOUSE_EDGE) {
+    return 100; // instant 1.00x crash — this is the house edge portion
   }
 
-  // Final fallback validation clamp check
-  const safe = Number.isFinite(crashMultiplierHundredths) ? crashMultiplierHundredths : 11010;
+  const raw = Math.floor((100 * (1 - HOUSE_EDGE)) / (1 - X));
+  const crashMultiplierHundredths = Math.min(maxCap, raw);
+
+  const safe = Number.isFinite(crashMultiplierHundredths) ? crashMultiplierHundredths : 100;
   return Math.max(100, safe);
 }
 
